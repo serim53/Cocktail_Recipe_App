@@ -4,7 +4,10 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/fragment_favorite.xml" value="0.1" />
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/fragment_search.xml" value="0.1" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/item_cocktail.xml" value="0.1" />
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/menu/menu_bottom.xml" value="0.1" />
       </map>
     </option>
   </component>
