@@ -3,8 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/drawable/ic_baseline_favorite_border_24.xml" value="0.17395833333333333" />
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/drawable/imgbtn_state.xml" value="0.17395833333333333" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/fragment_favorite.xml" value="0.1" />
+        <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/fragment_popular.xml" value="0.1" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/fragment_search.xml" value="0.1" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/layout/item_cocktail.xml" value="0.1" />
         <entry key="..\:/AndroidPractice/CocktailRecipe/app/src/main/res/menu/menu_bottom.xml" value="0.1" />

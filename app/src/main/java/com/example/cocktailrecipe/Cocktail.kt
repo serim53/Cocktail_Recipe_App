@@ -13,5 +13,5 @@ data class Drink(
     @SerializedName("strInstructions")
     val recipe: String,
     @SerializedName("strDrinkThumb")
-    val image: String
+    var image: String
 )

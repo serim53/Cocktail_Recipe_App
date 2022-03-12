@@ -48,6 +48,7 @@ class SearchFragment : Fragment() {
         fragmentSearchBinding.buttonSearch.setOnClickListener {
             searchCocktail()
         }
+
     }
 
     private fun initViews() {

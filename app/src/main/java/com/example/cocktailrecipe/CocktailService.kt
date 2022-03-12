@@ -8,4 +8,7 @@ interface CocktailService {
 
     @GET("search.php")
     fun listCocktails(@Query("s") name: String) : Call<Cocktail>
+
+    @GET("random.php")
+    fun popularCocktails() : Call<Cocktail>
 }

@@ -1,59 +1,69 @@
 package com.example.cocktailrecipe
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.cocktailrecipe.databinding.FragmentPopularBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [PopularFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class PopularFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    lateinit var fragmentPopularBinding: FragmentPopularBinding
+    private lateinit var service: CocktailService
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_popular, container, false)
+
+        fragmentPopularBinding = FragmentPopularBinding.inflate(layoutInflater, container, false)
+
+        val retrofit: Retrofit = Retrofit.Builder()
+            .baseUrl("https://www.thecocktaildb.com/api/json/v1/1/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        service = retrofit.create(CocktailService::class.java)
+
+
+        return fragmentPopularBinding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment PopularFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            PopularFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onResume() {
+        super.onResume()
+
+        getCocktail()
+    }
+
+    private fun getCocktail() {
+        service.popularCocktails().enqueue(
+            object: Callback<Cocktail> {
+                override fun onResponse(
+                    call: Call<Cocktail>,
+                    response: Response<Cocktail>
+                ) {
+                    response.body()?.let{
+                        Log.d("retrofit_test_popular", it.drinks.toString())
+                        val popular = it.drinks?.get(0)
+                        fragmentPopularBinding.drink = popular
+
+                    }
                 }
-            }
+
+                override fun onFailure(call: Call<Cocktail>, t: Throwable) {
+                    t.printStackTrace()
+                }
+
+            })
     }
 }
