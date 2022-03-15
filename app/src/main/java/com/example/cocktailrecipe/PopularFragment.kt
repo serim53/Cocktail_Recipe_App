@@ -41,7 +41,6 @@ class PopularFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         getCocktail()
     }
 
@@ -56,14 +55,11 @@ class PopularFragment : Fragment() {
                         Log.d("retrofit_test_popular", it.drinks.toString())
                         val popular = it.drinks?.get(0)
                         fragmentPopularBinding.drink = popular
-
                     }
                 }
-
                 override fun onFailure(call: Call<Cocktail>, t: Throwable) {
                     t.printStackTrace()
                 }
-
             })
     }
 }

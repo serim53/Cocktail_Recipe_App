@@ -8,51 +8,69 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cocktailrecipe.databinding.FragmentFavoriteBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class FavoriteFragment : Fragment() {
 
     lateinit var fragmentFavoriteBinding: FragmentFavoriteBinding
 
     private val adapter by lazy {
-        CocktailAdapter()
+        CocktailAdapter(this::onFavoriteButtonClicked)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         fragmentFavoriteBinding = FragmentFavoriteBinding.inflate(layoutInflater, container, false)
         return fragmentFavoriteBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         super.onViewCreated(view, savedInstanceState)
+
         initViews()
     }
 
-    private fun initViews() {
+    override fun onResume() {
+
+        super.onResume()
+
         val db = AppDatabase.getInstance(requireContext())
+        CoroutineScope(Dispatchers.Main).launch {
+            val drinks: List<CocktailEntity> = withContext(Dispatchers.IO){
+                db!!.cocktailDao().getAll()
+            }
+            adapter.setData(drinks.map{Drink(it.name, it.recipe, it.image)})
+        }
+    }
+
+    private fun initViews() {
+
         fragmentFavoriteBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         fragmentFavoriteBinding.recyclerView.adapter =  adapter
 
-        val r = Runnable {
-            val drink = db!!.cocktailDao().getAll()!!
-        }
+    }
 
-        val thread = Thread(r)
-        thread.start()
-//        CoroutineScope(Dispatchers.IO).async {
-//
-//            val drink = async {db!!.cocktailDao().getAll().map { Drink(it.name, it.recipe, it.image)}}
-////            adapter.setData(db!!.cocktailDao().getAll().map { Drink(it.name, it.recipe, it.image)})
-////            Log.d("ROOM", db!!.cocktailDao().getAll().toString())
-//            adapter.setData(drink.await())
-//        }
-        Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+    private fun onFavoriteButtonClicked(cocktailEntity: CocktailEntity, isSelected: Boolean) {
+
+        val db = AppDatabase.getInstance(requireContext())
+        Log.d("favorite_selected", isSelected.toString())
+        when(isSelected) {
+            true -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    db!!.cocktailDao().insertAll(cocktailEntity)
+                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                }
+            }
+            else -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    db!!.cocktailDao().delete(cocktailEntity)
+                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                }
+                adapter.deleteData(cocktailEntity)
+            }
+        }
     }
 }

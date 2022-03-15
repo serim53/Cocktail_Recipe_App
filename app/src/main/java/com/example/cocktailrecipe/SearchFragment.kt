@@ -9,6 +9,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cocktailrecipe.databinding.FragmentSearchBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,7 +23,7 @@ class SearchFragment : Fragment() {
     lateinit var fragmentSearchBinding: FragmentSearchBinding
     private lateinit var service: CocktailService
     private val adapter by lazy {
-        CocktailAdapter()
+        CocktailAdapter(this::onFavoriteButtonClicked)
     }
 
     override fun onCreateView(
@@ -78,5 +81,23 @@ class SearchFragment : Fragment() {
                 }
 
             })
+    }
+    private fun onFavoriteButtonClicked(cocktailEntity: CocktailEntity, isSelected: Boolean) {
+        val db = AppDatabase.getInstance(requireContext())
+        Log.d("search_selected", isSelected.toString())
+        when(isSelected) {
+            true -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    db!!.cocktailDao().insertAll(cocktailEntity)
+                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                }
+            }
+            else -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    db!!.cocktailDao().delete(cocktailEntity)
+                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                }
+            }
+        }
     }
 }

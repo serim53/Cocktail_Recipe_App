@@ -11,16 +11,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class CocktailAdapter : RecyclerView.Adapter<CocktailAdapter.ViewHolder>() {
+class CocktailAdapter(
+    private val onFavoriteButtonClicked: (CocktailEntity, Boolean) -> Unit
+) : RecyclerView.Adapter<CocktailAdapter.ViewHolder>() {
 
-    var cocktailList: List<Drink> = listOf()
-
+    var cocktailList: ArrayList<Drink> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemCocktailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
+        onFavoriteButtonClicked
         return ViewHolder(binding)
-
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -30,7 +30,12 @@ class CocktailAdapter : RecyclerView.Adapter<CocktailAdapter.ViewHolder>() {
     override fun getItemCount(): Int = cocktailList.size
 
     fun setData(list: List<Drink>){
-        cocktailList = list
+        cocktailList = list as ArrayList<Drink>
+        notifyDataSetChanged()
+    }
+
+    fun deleteData(cocktailEntity: CocktailEntity){
+        cocktailList.remove(Drink(cocktailEntity.name, cocktailEntity.recipe, cocktailEntity.image))
         notifyDataSetChanged()
     }
 
@@ -39,28 +44,11 @@ class CocktailAdapter : RecyclerView.Adapter<CocktailAdapter.ViewHolder>() {
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(cocktail: Drink) {
             binding.drink = cocktail
-
-            val db = AppDatabase.getInstance(binding.root.context)
             binding.buttonFavorite.run {
                 setOnClickListener { item ->
-                    when(item.isSelected) {
-                        true -> {
-                            item.isSelected = false
-                            CoroutineScope(Dispatchers.IO).launch {
-                                db!!.cocktailDao().insertAll(CocktailEntity(cocktail.name, cocktail.recipe, cocktail.image))
-                                Log.d("ROOM", db!!.cocktailDao().getAll().toString())
-                            }
-
-                        }
-                        else -> {
-                            item.isSelected = true
-                            CoroutineScope(Dispatchers.IO).launch {
-                                db!!.cocktailDao().delete(CocktailEntity(cocktail.image, cocktail.name, cocktail.recipe))
-                                Log.d("ROOM", db!!.cocktailDao().getAll().toString())
-                            }
-
-                        }
-                    }
+                    item.setSelected(!item.isSelected())
+                    onFavoriteButtonClicked(CocktailEntity(cocktail.name, cocktail.recipe, cocktail.image), item.isSelected)
+                    Log.d("adapter_selected", item.isSelected.toString())
                 }
             }
         }
