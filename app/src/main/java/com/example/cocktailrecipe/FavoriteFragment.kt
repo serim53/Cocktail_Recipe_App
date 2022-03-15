@@ -21,7 +21,7 @@ class FavoriteFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         fragmentFavoriteBinding = FragmentFavoriteBinding.inflate(layoutInflater, container, false)
         return fragmentFavoriteBinding.root
     }
@@ -34,43 +34,33 @@ class FavoriteFragment : Fragment() {
     }
 
     override fun onResume() {
-
         super.onResume()
 
         val db = AppDatabase.getInstance(requireContext())
         CoroutineScope(Dispatchers.Main).launch {
-            val drinks: List<CocktailEntity> = withContext(Dispatchers.IO){
-                db!!.cocktailDao().getAll()
+            val drinks: List<Drink> = withContext(Dispatchers.IO){
+                db!!.cocktailDao().getAll().map{Drink(it.name, it.recipe, it.image)}
             }
-            adapter.setData(drinks.map{Drink(it.name, it.recipe, it.image)})
+            adapter.setData(drinks)
+            adapter.setLocalItem(drinks)
         }
     }
 
     private fun initViews() {
-
         fragmentFavoriteBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         fragmentFavoriteBinding.recyclerView.adapter =  adapter
 
     }
 
     private fun onFavoriteButtonClicked(cocktailEntity: CocktailEntity, isSelected: Boolean) {
-
         val db = AppDatabase.getInstance(requireContext())
         Log.d("favorite_selected", isSelected.toString())
-        when(isSelected) {
-            true -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    db!!.cocktailDao().insertAll(cocktailEntity)
-                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
-                }
+        if (isSelected.not()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                db!!.cocktailDao().delete(cocktailEntity)
+                Log.d("ROOM", db.cocktailDao().getAll().toString())
             }
-            else -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    db!!.cocktailDao().delete(cocktailEntity)
-                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
-                }
-                adapter.deleteData(cocktailEntity)
-            }
+            adapter.deleteData(cocktailEntity)
         }
     }
 }
