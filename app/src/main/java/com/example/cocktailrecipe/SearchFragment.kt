@@ -12,6 +12,7 @@ import com.example.cocktailrecipe.databinding.FragmentSearchBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,6 +23,7 @@ class SearchFragment : Fragment() {
 
     lateinit var fragmentSearchBinding: FragmentSearchBinding
     private lateinit var service: CocktailService
+
     private val adapter by lazy {
         CocktailAdapter(this::onFavoriteButtonClicked)
     }
@@ -30,7 +32,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         fragmentSearchBinding = FragmentSearchBinding.inflate(layoutInflater, container, false)
         return fragmentSearchBinding.root
@@ -51,27 +53,27 @@ class SearchFragment : Fragment() {
         fragmentSearchBinding.buttonSearch.setOnClickListener {
             searchCocktail()
         }
-
     }
 
     private fun initViews() {
         fragmentSearchBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        fragmentSearchBinding.recyclerView.adapter =  adapter
+        fragmentSearchBinding.recyclerView.adapter = adapter
     }
 
     private fun searchCocktail() {
         service.listCocktails(fragmentSearchBinding.edittextSearch.text.toString()).enqueue(
-            object: Callback<Cocktail> {
+            object : Callback<Cocktail> {
                 override fun onResponse(
                     call: Call<Cocktail>,
                     response: Response<Cocktail>
                 ) {
-                    response.body()?.let{
+                    response.body()?.let {
                         Log.d("retrofit_test", it.drinks.toString())
-                        if (it.drinks.isNullOrEmpty()){
+                        if (it.drinks.isNullOrEmpty()) {
                             Toast.makeText(requireContext(), "정보가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
                         } else {
                             adapter.setData(it.drinks)
+                            setAdapterData()
                         }
                     }
                 }
@@ -79,23 +81,33 @@ class SearchFragment : Fragment() {
                 override fun onFailure(call: Call<Cocktail>, t: Throwable) {
                     t.printStackTrace()
                 }
-
             })
     }
+
+    private fun setAdapterData() {
+        val db = AppDatabase.getInstance(requireContext())
+        CoroutineScope(Dispatchers.Main).launch {
+            val drinks: List<Drink> = withContext(Dispatchers.IO){
+                db!!.cocktailDao().getAll().map { Drink(name = it.name, recipe = it.recipe, image = it.image) }
+            }
+            adapter.setLocalItem(drinks)
+        }
+    }
+
     private fun onFavoriteButtonClicked(cocktailEntity: CocktailEntity, isSelected: Boolean) {
         val db = AppDatabase.getInstance(requireContext())
         Log.d("search_selected", isSelected.toString())
-        when(isSelected) {
+        when (isSelected) {
             true -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     db!!.cocktailDao().insertAll(cocktailEntity)
-                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                    Log.d("ROOM", db.cocktailDao().getAll().toString())
                 }
             }
             else -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     db!!.cocktailDao().delete(cocktailEntity)
-                    Log.d("ROOM", db!!.cocktailDao().getAll().toString())
+                    Log.d("ROOM", db.cocktailDao().getAll().toString())
                 }
             }
         }

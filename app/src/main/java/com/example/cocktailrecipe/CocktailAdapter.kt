@@ -15,11 +15,11 @@ class CocktailAdapter(
     private val onFavoriteButtonClicked: (CocktailEntity, Boolean) -> Unit
 ) : RecyclerView.Adapter<CocktailAdapter.ViewHolder>() {
 
-    var cocktailList: ArrayList<Drink> = arrayListOf()
+    private var cocktailList: ArrayList<Drink> = arrayListOf()
+    private var localCocktailList: List<Drink> = listOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemCocktailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        onFavoriteButtonClicked
         return ViewHolder(binding)
     }
 
@@ -29,14 +29,21 @@ class CocktailAdapter(
 
     override fun getItemCount(): Int = cocktailList.size
 
+    fun setLocalItem(list: List<Drink>) {
+        localCocktailList = list
+        notifyDataSetChanged()
+    }
+
     fun setData(list: List<Drink>){
         cocktailList = list as ArrayList<Drink>
         notifyDataSetChanged()
     }
 
     fun deleteData(cocktailEntity: CocktailEntity){
-        cocktailList.remove(Drink(cocktailEntity.name, cocktailEntity.recipe, cocktailEntity.image))
-        notifyDataSetChanged()
+        val drink = cocktailList.firstOrNull { it.name == cocktailEntity.name }
+        val index = cocktailList.indexOf(drink)
+        cocktailList.remove(drink)
+        notifyItemRemoved(index)
     }
 
     inner class ViewHolder(
@@ -45,8 +52,9 @@ class CocktailAdapter(
         fun bind(cocktail: Drink) {
             binding.drink = cocktail
             binding.buttonFavorite.run {
+                isSelected = localCocktailList.contains(cocktail)
                 setOnClickListener { item ->
-                    item.setSelected(!item.isSelected())
+                    item.isSelected = !item.isSelected
                     onFavoriteButtonClicked(CocktailEntity(cocktail.name, cocktail.recipe, cocktail.image), item.isSelected)
                     Log.d("adapter_selected", item.isSelected.toString())
                 }

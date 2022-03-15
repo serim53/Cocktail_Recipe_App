@@ -4,5 +4,7 @@
         android:state_pressed="true" />
     <item android:drawable="@drawable/ic_baseline_favorite_24"
         android:state_focused="true" />
+    <item android:state_selected="true"
+        android:drawable="@drawable/ic_baseline_favorite_24"/>
     <item android:drawable="@drawable/ic_baseline_favorite_border_24" />
 </selector>
